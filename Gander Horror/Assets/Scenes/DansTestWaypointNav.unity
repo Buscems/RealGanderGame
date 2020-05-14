@@ -538,7 +538,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   neighbors: []
   locations: 
-  radius: 0.61
+  radius: 0.57
 --- !u!1 &417331520
 GameObject:
   m_ObjectHideFlags: 0
