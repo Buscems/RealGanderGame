@@ -34,6 +34,8 @@ public class PlayerMovement : MonoBehaviour
     float velocityY = 0;
     float smoothTime = 0.1f;
 
+    float setSpeed;
+
     void Start()
     {
         //player = ReInput.players.GetPlayer(playerid);
@@ -42,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
 
         targetY = transform.position.y - 0.7f;
         mainY = transform.position.y + 0.3f;
+        setSpeed = speed;
     }
 
     
@@ -88,12 +91,25 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
                 isCrouch = true;
+                speed = speed - 4;
             }
 
             if (Input.GetKeyUp(KeyCode.LeftControl))
             {
                 isCrouch = false;
+                speed = setSpeed;
             }
+
+            if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+            {
+                speed = speed + 4;
+            }
+
+            if (Input.GetKeyUp(KeyCode.LeftShift) || Input.GetKeyUp(KeyCode.RightShift))
+            {
+                speed = setSpeed;
+            }
+
         }
 
         if (useController)
