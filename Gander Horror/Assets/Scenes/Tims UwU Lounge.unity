@@ -437,12 +437,15 @@ MonoBehaviour:
   colliderPlayer: {fileID: 1462406066}
   speed: 12
   gravity: -9.81
+  moveSpeed: 3.01
   groundCheck: {fileID: 1304613633}
   groundDist: 0.4
   groundMask:
     serializedVersion: 2
     m_Bits: 256
   useController: 0
+  targetY: 2.19
+  mainY: 2.95
 --- !u!143 &1801670585
 CharacterController:
   m_ObjectHideFlags: 0
@@ -456,7 +459,7 @@ CharacterController:
   serializedVersion: 2
   m_Height: 2
   m_Radius: 0.5
-  m_SlopeLimit: 45
+  m_SlopeLimit: 60
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
@@ -554,7 +557,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2035341959}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8277778, z: 0}
+  m_LocalPosition: {x: 0, y: 0.95, z: 0}
   m_LocalScale: {x: 0.83333325, y: 0.5555556, z: 0.83333325}
   m_Children: []
   m_Father: {fileID: 1462406069}
@@ -572,5 +575,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f57625d071a2d654084ee30edf058058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sensitivity: 100
+  sensitivity: 350
   body: {fileID: 1801670586}
