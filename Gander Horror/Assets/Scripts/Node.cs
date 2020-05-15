@@ -31,9 +31,9 @@ public class Node : MonoBehaviour
 
 
     //Give goose new point to go to
-    public Vector3 GetPosition()
+    public Vector3 GetDestination()
     {
-        Vector3 positionToGoTo = new Vector3();
+        Vector3 positionToGoTo = transform.position;
         positionToGoTo.x = positionToGoTo.x + Random.Range(-radius, radius);
         positionToGoTo.z = positionToGoTo.z + Random.Range(-radius, radius);
 

@@ -538,7 +538,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   neighbors: []
   locations: 
-  radius: 0.57
+  radius: 0
 --- !u!1 &417331520
 GameObject:
   m_ObjectHideFlags: 0
@@ -1623,6 +1623,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1095650556}
+  - component: {fileID: 1095650557}
   - component: {fileID: 1095650555}
   - component: {fileID: 1095650554}
   - component: {fileID: 1095650553}
@@ -1719,12 +1720,28 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1095650551}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.6, y: 1.79, z: 0.387}
+  m_LocalPosition: {x: 12.14, y: 1.79, z: -0.1}
   m_LocalScale: {x: 0.41172, y: 0.41172, z: 0.41172}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1095650557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1095650551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a8d4eac3b5df92449715b1ae2235e40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentNode: {fileID: 351400574}
+  walkSpeed: 0
+  runSpeed: 0
+  turnSpeed: 0
 --- !u!1 &1102821257
 GameObject:
   m_ObjectHideFlags: 0
