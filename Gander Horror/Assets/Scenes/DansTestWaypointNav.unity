@@ -246,7 +246,6 @@ MonoBehaviour:
   neighbors:
   - {fileID: 351400574}
   - {fileID: 918199707}
-  - {fileID: 1703134250}
   locations: 
   radius: 0.34
 --- !u!4 &176574592
@@ -716,7 +715,6 @@ MonoBehaviour:
   neighbors:
   - {fileID: 176574591}
   - {fileID: 918199707}
-  - {fileID: 1703134250}
   locations: 
   radius: 0.18
 --- !u!1 &362554978
@@ -2545,6 +2543,10 @@ MonoBehaviour:
   minDistanceToDestination: 0.064
   chanceForNewNode: 100
   maxPotentiaGooseWaitTime: 5
+  goToKitchen: 0
+  goToBathroom: 0
+  goToBedRoom: 0
+  goToLivingRoom: 0
 --- !u!1 &1102821257
 GameObject:
   m_ObjectHideFlags: 0

@@ -47,27 +47,43 @@ public static class Equations
     public static Node[] GetQuickestPathToLocation(Transform actor, Node[] startingNodes, Node.Locations location)
     {
         Node[] path = null;
+        List<Stack<Node>> goodPaths = new List<Stack<Node>>();
+        //List<Stack<Node>> allPaths = new List<Stack<Node>>();
+        List<string> allPaths = new List<string>();
         Stack<Node> order = new Stack<Node>();
         float shortestPath = -1;
-
-        bool foundLocation = false;
+        int whileCount = 0;
 
         for (int k = 0; k < startingNodes.Length; k++)
         {
             startingNodes[k].SetVisited(true);
             order.Push(startingNodes[k]);
 
-            while (foundLocation == false && order.Count != 0)
+            //check if currently in room
+            if (startingNodes[k].CheckForLocation(location) == true)
+            {
+                return new Node[] { startingNodes[k] };
+            }                      
+
+            while (order.Count != 0 && whileCount < 100)
             {
                 Node newNode = null;
                 Node[] newNeighbors = order.Peek().neighbors;
 
                 for (int i = 0; i < newNeighbors.Length; i++)
                 {
-                    if (newNeighbors[i].CheckIfVisited() == false)
+                    Stack<Node> tempOrder = new Stack<Node>(order);
+                    tempOrder.Push(newNeighbors[i]);
+                    string stringTempOrder = "";
+                    foreach(Node n in tempOrder)
                     {
+                        stringTempOrder += n.gameObject.name;
+                    }
+
+                    if (/*!allPaths.Contains(tempOrder)*/!allPaths.Contains(stringTempOrder) && newNeighbors[i].CheckIfVisited() == false)
+                    {                       
+                        allPaths.Add(stringTempOrder);
                         newNode = newNeighbors[i];
-                        newNeighbors[i].SetVisited(true);
                         break;
                     }
                 }
@@ -78,54 +94,77 @@ public static class Equations
                     if (newNode.CheckForLocation(location) == true)
                     {
                         order.Push(newNode);
-                        float currentPath = -1;
-                        Node lastNode = null;
+                        order.Peek().SetVisited(false);
+                        goodPaths.Add(order);
+                        order.Pop();
 
-                        //get path distance
-                        foreach (Node n in order)
-                        {
-                            if (lastNode != null)
-                            {
-                                if (currentPath == -1)
-                                {
-                                    currentPath = Vector3.Distance(n.gameObject.transform.position, lastNode.gameObject.transform.position);
-                                }
-                                else
-                                {
-                                    currentPath += Vector3.Distance(n.gameObject.transform.position, lastNode.gameObject.transform.position);
-                                }
-                            }
-                            lastNode = n;
-                        }
-
-                        if (shortestPath == -1 || currentPath < shortestPath)
-                        {
-                            shortestPath = currentPath;
-
-                            Stack<Node> reversedPath = new Stack<Node>();
-                            while (order.Count != 0)
-                            {
-                                reversedPath.Push(order.Pop());
-                            }
-
-                            path = reversedPath.ToArray();
-                        }
+                        Debug.Log("POP1");
                     }
                     //if location not reached
                     else
                     {
+                        Debug.Log("POP2");
                         order.Push(newNode);
+                        order.Peek().SetVisited(true);
                     }
                 }
                 else
                 {
+                    Debug.Log("POP3");
+                    Debug.Log("Before: " + order.Count);
+                    string stringTempOrder = "";
+                    foreach (Node n in order)
+                    {
+                        stringTempOrder += n.gameObject.name;
+                    }
+                    allPaths.Add(stringTempOrder);
+                    order.Peek().SetVisited(false);
                     order.Pop();
+                    Debug.Log("After: " + order.Count);
                 }
 
-                if(order.Count > 0)
+                whileCount++;
+            }
+        }
+
+        //get shortest path
+        //sift through all node arrays
+        for(int i = 0; i < goodPaths.Count; i++)
+        {
+            float distance = -1;
+            Node lastNode = null;
+
+            List<Node> tempStack = new List<Node>(goodPaths[i]);
+            //sift through each element of node array
+            for (int k = 0; k < tempStack.Count; k++)
+            {
+                if (lastNode != null)
                 {
-                    foundLocation = order.Peek().CheckForLocation(location);
-                }                
+                    if (k == 0)
+                    {
+                        distance = Vector3.Distance(tempStack[k].gameObject.transform.position, lastNode.gameObject.transform.position);
+                    }
+                    else
+                    {
+                        distance += Vector3.Distance(tempStack[k].gameObject.transform.position, lastNode.gameObject.transform.position);
+                    }
+                }
+                lastNode = tempStack[k];
+            }
+
+            if (shortestPath == -1 || distance < shortestPath)
+            {
+                shortestPath = distance;
+
+                Stack<Node> reversedPath = new Stack<Node>();
+                while (tempStack.Count != 0)
+                {
+                    // tempStack.Peek().SetVisited(false);
+                    Stack<Node> finalStack = new Stack<Node>(tempStack);
+                    reversedPath.Push(finalStack.Pop());
+                }
+
+                path = reversedPath.ToArray();
             }
         }
 

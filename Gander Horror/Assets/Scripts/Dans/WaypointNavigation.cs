@@ -60,7 +60,7 @@ public class WaypointNavigation : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.K))
         {
-            Node[] pxxxath;
+            Node[] pxxxath = null;
             if (lastNode == null)
             {
                 pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { currentNode }, Node.Locations.Kitchen);
@@ -76,7 +76,7 @@ public class WaypointNavigation : MonoBehaviour
             {
                 for (int i = 0; i < pxxxath.Length; i++)
                 {
-                    Debug.Log(pxxxath[i]);
+                    Debug.Log("THE PATH: " + pxxxath[i]);
                 }
             }
             else
