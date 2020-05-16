@@ -39,7 +39,10 @@ public class WaypointNavigation : MonoBehaviour
     private bool aggro = false;
     private bool movingTowardsDestination = true;
 
-
+    public bool goToKitchen = false;
+    public bool goToBathroom = false;
+    public bool goToBedRoom = false;
+    public bool goToLivingRoom = false;
 
     void Start()
     {
@@ -54,6 +57,34 @@ public class WaypointNavigation : MonoBehaviour
         {
             transform.rotation = Equations.RotateTowardsObj(currentDestination, this.transform, turnSpeed);
         }
+
+        if(Input.GetKeyDown(KeyCode.K))
+        {
+            Node[] pxxxath;
+            if (lastNode == null)
+            {
+                pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { currentNode }, Node.Locations.Kitchen);
+
+            }
+            else
+            {
+                 pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { lastNode, currentNode }, Node.Locations.Kitchen);
+
+            }
+
+            if (pxxxath != null)
+            {
+                for (int i = 0; i < pxxxath.Length; i++)
+                {
+                    Debug.Log(pxxxath[i]);
+                }
+            }
+            else
+            {
+                Debug.Log("ERROR");
+            }
+        }
+
     }
 
     private void FixedUpdate()
