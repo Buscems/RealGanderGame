@@ -38,13 +38,24 @@ public static class Equations
     }
 
     public static List<Stack<Node>> GetAllPaths(Stack<Node> _order, Node.Locations _location)
-    {
+    {              
         List<Stack<Node>> paths = new List<Stack<Node>>();
         Node[] neighbors = _order.Peek().neighbors;
 
-        for(int i = 0; i < neighbors.Length; i++)
+        
+        Stack<Node> debugStack = new Stack<Node>(_order);
+        while (debugStack.Count > 0)
         {
-            Stack<Node> tempStack = new Stack<Node>(_order);
+            Debug.Log(debugStack.Peek().gameObject.name);
+            debugStack.Pop();
+        }
+        Debug.Log("=================================");
+        
+
+        for (int i = 0; i < neighbors.Length; i++)
+        {
+            Stack<Node> tempStack0 = new Stack<Node>(_order);
+            Stack<Node> tempStack = new Stack<Node>(tempStack0);
 
             //if the right location, add stack to list
             if (neighbors[i].CheckForLocation(_location) == true)
@@ -56,17 +67,17 @@ public static class Equations
                 //if next neighbor hasnt been visited yet, check that path
                 if (neighbors[i].CheckIfVisited() == false)
                 {
-                    tempStack.Peek().SetVisited(true);
+                    neighbors[i].SetVisited(true);
                     tempStack.Push(neighbors[i]);
 
                     //add all future paths to the stack of lists recursively
                     List<Stack<Node>> allFuturePaths = GetAllPaths(tempStack, _location);
                     for (int k = 0; k < allFuturePaths.Count; k++)
                     {
-                        if (allFuturePaths[k] != null)
-                        {
+                       // if (allFuturePaths[k] != null)
+                       // {
                             paths.Add(allFuturePaths[k]);
-                        }
+                       // }
                     }
 
                 }
@@ -84,7 +95,7 @@ public static class Equations
     /// <param name="startingNode"></param>
     /// <param name="location"></param>
     /// <returns></returns>
-    public static Node[] GetQuickestPathToLocation(Transform actor, Node[] startingNodes, Node.Locations location)
+    public static Node[] GetQuickestPathToLocation(Transform actor, Node startingNode, Node.Locations location)
     {
         Node[] path = null;
         List<Stack<Node>> goodPaths = new List<Stack<Node>>();
@@ -92,16 +103,15 @@ public static class Equations
         Stack<Node> order = new Stack<Node>();
         float shortestPath = -1;
 
-        for (int k = 0; k < startingNodes.Length; k++)
-        {
-            startingNodes[k].SetVisited(true);
+
+            startingNode.SetVisited(true);
             order.Clear();
-            order.Push(startingNodes[k]);
+            order.Push(startingNode);
 
             //check if currently in room
-            if (startingNodes[k].CheckForLocation(location) == true)
+            if (startingNode.CheckForLocation(location) == true)
             {
-                return new Node[] { startingNodes[k] };
+                return new Node[] { startingNode };
             }
 
             #region ToBe discarded
@@ -177,8 +187,7 @@ public static class Equations
                 {
                     goodPaths.Add(tempGoodPaths[i]);
                 }
-            }
-        }
+            }       
 
 
 
@@ -195,6 +204,7 @@ public static class Equations
             {
                 if (lastNode != null)
                 {
+                    tempStack[k].SetVisited(false);
                     if (k == 0)
                     {
                         distance = Vector3.Distance(tempStack[k].gameObject.transform.position, lastNode.gameObject.transform.position);
@@ -211,6 +221,7 @@ public static class Equations
             {
                 shortestPath = distance;
 
+                /*
                 Stack<Node> reversedPath = new Stack<Node>();
                 Stack<Node> finalStack = new Stack<Node>(tempStack);
                 while (finalStack.Count != 0)
@@ -220,6 +231,8 @@ public static class Equations
                 }
 
                 path = reversedPath.ToArray();
+                */
+                path = tempStack.ToArray();
             }
         }
 

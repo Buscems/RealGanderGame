@@ -30,7 +30,7 @@ public class WaypointNavigation : MonoBehaviour
     [Range(0, 100)]
     [Tooltip("This is the percentage chance of the goose not choosing the node it just came from")]
     private float chanceForNewNode;
-    private Node lastNode = null;
+    public Node lastNode = null;
 
     [SerializeField]
     [Tooltip("The max amount of time the goose waits before moving to a new node")]
@@ -61,20 +61,34 @@ public class WaypointNavigation : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.K))
         {
             Node[] pxxxath = null;
+            Node[] pxxxath2 = null;
             if (lastNode == null)
             {
-                pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { currentNode }, Node.Locations.Kitchen);
+                pxxxath = Equations.GetQuickestPathToLocation(this.transform, currentNode , Node.Locations.Kitchen);
             }
             else
             {
-                 pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { lastNode, currentNode }, Node.Locations.Kitchen);
+                pxxxath2 = Equations.GetQuickestPathToLocation(this.transform, lastNode, Node.Locations.Kitchen);
+                pxxxath = Equations.GetQuickestPathToLocation(this.transform, currentNode, Node.Locations.Kitchen);
             }
 
             if (pxxxath != null)
             {
                 for (int i = 0; i < pxxxath.Length; i++)
                 {
-                    Debug.Log("THE PATH: " + pxxxath[i]);
+                    Debug.Log("THE PATH1: " + pxxxath[i]);
+                }
+            }
+            else
+            {
+                Debug.Log("ERROR");
+            }
+
+            if (pxxxath2 != null)
+            {
+                for (int i = 0; i < pxxxath2.Length; i++)
+                {
+                    Debug.Log("THE PATH2: " + pxxxath2[i]);
                 }
             }
             else
