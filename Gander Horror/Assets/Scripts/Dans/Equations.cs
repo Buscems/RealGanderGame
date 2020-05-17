@@ -37,6 +37,46 @@ public static class Equations
         return angle;
     }
 
+    public static List<Stack<Node>> GetAllPaths(Stack<Node> _order, Node.Locations _location)
+    {
+        List<Stack<Node>> paths = new List<Stack<Node>>();
+        Node[] neighbors = _order.Peek().neighbors;
+
+        for(int i = 0; i < neighbors.Length; i++)
+        {
+            Stack<Node> tempStack = new Stack<Node>(_order);
+
+            //if the right location, add stack to list
+            if (neighbors[i].CheckForLocation(_location) == true)
+            {
+                tempStack.Push(neighbors[i]);
+                paths.Add(tempStack);
+            }else
+            {
+                //if next neighbor hasnt been visited yet, check that path
+                if (neighbors[i].CheckIfVisited() == false)
+                {
+                    tempStack.Peek().SetVisited(true);
+                    tempStack.Push(neighbors[i]);
+
+                    //add all future paths to the stack of lists recursively
+                    List<Stack<Node>> allFuturePaths = GetAllPaths(tempStack, _location);
+                    for (int k = 0; k < allFuturePaths.Count; k++)
+                    {
+                        if (allFuturePaths[k] != null)
+                        {
+                            paths.Add(allFuturePaths[k]);
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return paths;
+    }
+
+
     /// <summary>
     /// Find quickest path to a location
     /// </summary>
@@ -48,23 +88,24 @@ public static class Equations
     {
         Node[] path = null;
         List<Stack<Node>> goodPaths = new List<Stack<Node>>();
-        //List<Stack<Node>> allPaths = new List<Stack<Node>>();
         List<string> allPaths = new List<string>();
         Stack<Node> order = new Stack<Node>();
         float shortestPath = -1;
-        int whileCount = 0;
 
         for (int k = 0; k < startingNodes.Length; k++)
         {
             startingNodes[k].SetVisited(true);
+            order.Clear();
             order.Push(startingNodes[k]);
 
             //check if currently in room
             if (startingNodes[k].CheckForLocation(location) == true)
             {
                 return new Node[] { startingNodes[k] };
-            }                      
+            }
 
+            #region ToBe discarded
+            /*
             while (order.Count != 0 && whileCount < 100)
             {
                 Node newNode = null;
@@ -80,7 +121,8 @@ public static class Equations
                         stringTempOrder += n.gameObject.name;
                     }
 
-                    if (/*!allPaths.Contains(tempOrder)*/!allPaths.Contains(stringTempOrder) && newNeighbors[i].CheckIfVisited() == false)
+                    if (!allPaths.Contains(tempOrder)
+            !allPaths.Contains(stringTempOrder) && newNeighbors[i].CheckIfVisited() == false)
                     {                       
                         allPaths.Add(stringTempOrder);
                         newNode = newNeighbors[i];
@@ -125,11 +167,24 @@ public static class Equations
 
                 whileCount++;
             }
+             */
+            #endregion
+
+            List<Stack<Node>> tempGoodPaths = new List<Stack<Node>>(GetAllPaths(order, location));
+            for (int i = 0; i < tempGoodPaths.Count; i++)
+            {
+                if (tempGoodPaths != null)
+                {
+                    goodPaths.Add(tempGoodPaths[i]);
+                }
+            }
         }
+
+
 
         //get shortest path
         //sift through all node arrays
-        for(int i = 0; i < goodPaths.Count; i++)
+        for (int i = 0; i < goodPaths.Count; i++)
         {
             float distance = -1;
             Node lastNode = null;
@@ -157,11 +212,11 @@ public static class Equations
                 shortestPath = distance;
 
                 Stack<Node> reversedPath = new Stack<Node>();
-                while (tempStack.Count != 0)
-                {
-                    // tempStack.Peek().SetVisited(false);
-                    Stack<Node> finalStack = new Stack<Node>(tempStack);
-                    reversedPath.Push(finalStack.Pop());
+                Stack<Node> finalStack = new Stack<Node>(tempStack);
+                while (finalStack.Count != 0)
+                {                    
+                    reversedPath.Push(finalStack.Peek());
+                    finalStack.Pop();
                 }
 
                 path = reversedPath.ToArray();

@@ -64,12 +64,10 @@ public class WaypointNavigation : MonoBehaviour
             if (lastNode == null)
             {
                 pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { currentNode }, Node.Locations.Kitchen);
-
             }
             else
             {
                  pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { lastNode, currentNode }, Node.Locations.Kitchen);
-
             }
 
             if (pxxxath != null)
