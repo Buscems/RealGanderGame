@@ -58,18 +58,35 @@ public class WaypointNavigation : MonoBehaviour
             transform.rotation = Equations.RotateTowardsObj(currentDestination, this.transform, turnSpeed);
         }
 
-        if(Input.GetKeyDown(KeyCode.K))
+        if(Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.L) || Input.GetKeyDown(KeyCode.J) || Input.GetKeyDown(KeyCode.H))
         {
+            Node.Locations location = new Node.Locations();
+            if (Input.GetKeyDown(KeyCode.K))
+            {
+                location = Node.Locations.Kitchen;
+            }
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                location = Node.Locations.Living_Room;
+            }
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                location = Node.Locations.Bathroom;
+            }
+            if (Input.GetKeyDown(KeyCode.H))
+            {
+                location = Node.Locations.Bedroom;
+            }
+
             Node[] pxxxath = null;
-            Node[] pxxxath2 = null;
+            //Node[] pxxxath2 = null;
             if (lastNode == null)
             {
-                pxxxath = Equations.GetQuickestPathToLocation(this.transform, currentNode , Node.Locations.Kitchen);
+                pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { currentNode }, location);
             }
             else
             {
-                pxxxath2 = Equations.GetQuickestPathToLocation(this.transform, lastNode, Node.Locations.Kitchen);
-                pxxxath = Equations.GetQuickestPathToLocation(this.transform, currentNode, Node.Locations.Kitchen);
+                pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { currentNode, lastNode }, location);
             }
 
             if (pxxxath != null)
@@ -77,18 +94,6 @@ public class WaypointNavigation : MonoBehaviour
                 for (int i = 0; i < pxxxath.Length; i++)
                 {
                     Debug.Log("THE PATH1: " + pxxxath[i]);
-                }
-            }
-            else
-            {
-                Debug.Log("ERROR");
-            }
-
-            if (pxxxath2 != null)
-            {
-                for (int i = 0; i < pxxxath2.Length; i++)
-                {
-                    Debug.Log("THE PATH2: " + pxxxath2[i]);
                 }
             }
             else

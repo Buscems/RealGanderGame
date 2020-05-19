@@ -246,6 +246,7 @@ MonoBehaviour:
   neighbors:
   - {fileID: 351400574}
   - {fileID: 918199707}
+  - {fileID: 1703134250}
   locations: 
   radius: 0.34
 --- !u!4 &176574592
@@ -715,6 +716,7 @@ MonoBehaviour:
   neighbors:
   - {fileID: 176574591}
   - {fileID: 918199707}
+  - {fileID: 1703134250}
   locations: 
   radius: 0.18
 --- !u!1 &362554978
@@ -2542,6 +2544,7 @@ MonoBehaviour:
   maxTurnRotation: 75
   minDistanceToDestination: 0.064
   chanceForNewNode: 100
+  lastNode: {fileID: 0}
   maxPotentiaGooseWaitTime: 5
   goToKitchen: 0
   goToBathroom: 0

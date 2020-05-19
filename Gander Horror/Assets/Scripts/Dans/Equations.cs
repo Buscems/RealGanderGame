@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Diagnostics;
 
 public static class Equations
 {
@@ -37,12 +38,16 @@ public static class Equations
         return angle;
     }
 
-    public static List<Stack<Node>> GetAllPaths(Stack<Node> _order, Node.Locations _location)
-    {              
+    public static KeyValuePair<float, List<Stack<Node>>> GetAllPaths(Stack<Node> _order, Node.Locations _location, float pathToShortestLocation, float _currentPathLength)
+    {
         List<Stack<Node>> paths = new List<Stack<Node>>();
         Node[] neighbors = _order.Peek().neighbors;
-
+        float shortestPath = pathToShortestLocation;
+        float currentPathLength = _currentPathLength;
         
+        #region Debug Display
+        /*
+        //print out the node path as it runs through
         Stack<Node> debugStack = new Stack<Node>(_order);
         while (debugStack.Count > 0)
         {
@@ -50,41 +55,97 @@ public static class Equations
             debugStack.Pop();
         }
         Debug.Log("=================================");
-        
+        */
+        #endregion
 
         for (int i = 0; i < neighbors.Length; i++)
-        {
-            Stack<Node> tempStack0 = new Stack<Node>(_order);
-            Stack<Node> tempStack = new Stack<Node>(tempStack0);
+        {            
+            #region method one SLOWER
+            /*
+            UnityEngine.Debug.Log("CheckPath");
+            float newCurrentPathLength = currentPathLength;
+            if (newCurrentPathLength != -1)
+            {
+                newCurrentPathLength += Mathf.Abs(Vector3.Distance(neighbors[i].gameObject.transform.position, _order.Peek().gameObject.transform.position));
+            }
+            else
+            {
+                newCurrentPathLength = Mathf.Abs(Vector3.Distance(neighbors[i].gameObject.transform.position, _order.Peek().gameObject.transform.position));
+            }
+            */
+            #endregion           
+            
+            #region method two FASTER
+            float newCurrentPathLength = -1;
+            Node lastNode = null;
 
-            //if the right location, add stack to list
-            if (neighbors[i].CheckForLocation(_location) == true)
+            //find path length
+            List<Node> tempStack0 = new List<Node>(_order);
+            //sift through each element of node array
+            for (int k = 0; k < tempStack0.Count; k++)
             {
-                tempStack.Push(neighbors[i]);
-                paths.Add(tempStack);
-            }else
-            {
-                //if next neighbor hasnt been visited yet, check that path
-                if (neighbors[i].CheckIfVisited() == false)
+                if (lastNode != null)
                 {
-                    neighbors[i].SetVisited(true);
-                    tempStack.Push(neighbors[i]);
-
-                    //add all future paths to the stack of lists recursively
-                    List<Stack<Node>> allFuturePaths = GetAllPaths(tempStack, _location);
-                    for (int k = 0; k < allFuturePaths.Count; k++)
+                    if (k == 0)
                     {
-                       // if (allFuturePaths[k] != null)
-                       // {
-                            paths.Add(allFuturePaths[k]);
-                       // }
+                        newCurrentPathLength = Mathf.Abs(Vector3.Distance(tempStack0[k].gameObject.transform.position, lastNode.gameObject.transform.position));
                     }
+                    else
+                    {
+                        newCurrentPathLength += Mathf.Abs(Vector3.Distance(tempStack0[k].gameObject.transform.position, lastNode.gameObject.transform.position));
+                    }
+                }
+                lastNode = tempStack0[k];
+            }
+            #endregion
+            
 
+            if (newCurrentPathLength < shortestPath || shortestPath == -1)
+            {
+                Stack<Node> tempStack = new Stack<Node>(_order);
+                tempStack = new Stack<Node>(tempStack);
+
+                //if the right location, add stack to list
+                if (neighbors[i].CheckForLocation(_location) == true)
+                {
+                    tempStack.Push(neighbors[i]);
+                    paths.Add(tempStack);
+                    shortestPath = newCurrentPathLength;
+
+                    #region Debug Display
+                    //print out the node path as it runs through
+                    Stack<Node> debugStack = new Stack<Node>(tempStack);
+                    while (debugStack.Count > 0)
+                    {
+                        debugStack.Pop();
+                    }
+                    #endregion
+                }
+                else
+                {
+                    //if next neighbor hasnt been visited yet, check that path
+                    if (neighbors[i].CheckIfVisited() == false)
+                    {
+                        neighbors[i].SetVisited(true);
+                        tempStack.Push(neighbors[i]);
+
+                        //add all future paths to the stack of lists recursively
+                        KeyValuePair<float, List<Stack<Node>>> keyValue = GetAllPaths(tempStack, _location, shortestPath, newCurrentPathLength);
+                        List<Stack<Node>> allFuturePaths = keyValue.Value;
+                        shortestPath = keyValue.Key;
+
+                        for (int k = 0; k < allFuturePaths.Count; k++)
+                        {
+                            paths.Add(allFuturePaths[k]);
+                        }
+                        neighbors[i].SetVisited(false);
+                    }
                 }
             }
         }
 
-        return paths;
+        KeyValuePair<float, List<Stack<Node>>> values = new KeyValuePair<float, List<Stack<Node>>>(shortestPath, paths);
+        return values;
     }
 
 
@@ -95,23 +156,25 @@ public static class Equations
     /// <param name="startingNode"></param>
     /// <param name="location"></param>
     /// <returns></returns>
-    public static Node[] GetQuickestPathToLocation(Transform actor, Node startingNode, Node.Locations location)
+    public static Node[] GetQuickestPathToLocation(Transform actor, Node[] startingNodes, Node.Locations location)
     {
         Node[] path = null;
         List<Stack<Node>> goodPaths = new List<Stack<Node>>();
         List<string> allPaths = new List<string>();
         Stack<Node> order = new Stack<Node>();
         float shortestPath = -1;
+        float newShortestPath = -1;
 
-
-            startingNode.SetVisited(true);
+        for (int k = 0; k < startingNodes.Length; k++)
+        {
+            startingNodes[k].SetVisited(true);
             order.Clear();
-            order.Push(startingNode);
+            order.Push(startingNodes[k]);
 
             //check if currently in room
-            if (startingNode.CheckForLocation(location) == true)
+            if (startingNodes[k].CheckForLocation(location) == true)
             {
-                return new Node[] { startingNode };
+                return new Node[] { startingNodes[k] };
             }
 
             #region ToBe discarded
@@ -180,16 +243,22 @@ public static class Equations
              */
             #endregion
 
-            List<Stack<Node>> tempGoodPaths = new List<Stack<Node>>(GetAllPaths(order, location));
+            Stopwatch st = new Stopwatch();
+            st.Start();
+            KeyValuePair<float, List<Stack<Node>>> values = GetAllPaths(order, location, newShortestPath, -1);
+            List<Stack<Node>> tempGoodPaths = new List<Stack<Node>>(values.Value);
+            newShortestPath = values.Key;
+            st.Stop();
+            UnityEngine.Debug.Log(string.Format("Method took {0} ms to complete", st.ElapsedMilliseconds));
+
             for (int i = 0; i < tempGoodPaths.Count; i++)
             {
                 if (tempGoodPaths != null)
                 {
                     goodPaths.Add(tempGoodPaths[i]);
                 }
-            }       
-
-
+            }
+        }
 
         //get shortest path
         //sift through all node arrays
@@ -207,11 +276,11 @@ public static class Equations
                     tempStack[k].SetVisited(false);
                     if (k == 0)
                     {
-                        distance = Vector3.Distance(tempStack[k].gameObject.transform.position, lastNode.gameObject.transform.position);
+                        distance = Mathf.Abs(Vector3.Distance(tempStack[k].gameObject.transform.position, lastNode.gameObject.transform.position));
                     }
                     else
                     {
-                        distance += Vector3.Distance(tempStack[k].gameObject.transform.position, lastNode.gameObject.transform.position);
+                        distance += Mathf.Abs(Vector3.Distance(tempStack[k].gameObject.transform.position, lastNode.gameObject.transform.position));
                     }
                 }
                 lastNode = tempStack[k];
@@ -220,18 +289,6 @@ public static class Equations
             if (shortestPath == -1 || distance < shortestPath)
             {
                 shortestPath = distance;
-
-                /*
-                Stack<Node> reversedPath = new Stack<Node>();
-                Stack<Node> finalStack = new Stack<Node>(tempStack);
-                while (finalStack.Count != 0)
-                {                    
-                    reversedPath.Push(finalStack.Peek());
-                    finalStack.Pop();
-                }
-
-                path = reversedPath.ToArray();
-                */
                 path = tempStack.ToArray();
             }
         }
