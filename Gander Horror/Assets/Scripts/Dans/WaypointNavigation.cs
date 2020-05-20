@@ -58,7 +58,7 @@ public class WaypointNavigation : MonoBehaviour
             transform.rotation = Equations.RotateTowardsObj(currentDestination, this.transform, turnSpeed);
         }
 
-        if(Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.L) || Input.GetKeyDown(KeyCode.J) || Input.GetKeyDown(KeyCode.H))
+        if (Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.L) || Input.GetKeyDown(KeyCode.J) || Input.GetKeyDown(KeyCode.H))
         {
             Node.Locations location = new Node.Locations();
             if (Input.GetKeyDown(KeyCode.K))
@@ -78,22 +78,38 @@ public class WaypointNavigation : MonoBehaviour
                 location = Node.Locations.Bedroom;
             }
 
-            Node[] pxxxath = null;
+            KeyValuePair<float, Node[]> path1 = new KeyValuePair<float, Node[]>();
+            KeyValuePair<float, Node[]> path2 = new KeyValuePair<float, Node[]>();
+            Node[] shortestPath;
             //Node[] pxxxath2 = null;
             if (lastNode == null)
             {
-                pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { currentNode }, location);
+                path1 = Equations.GetQuickestPathToLocation(this.transform, currentNode, location);
+                shortestPath = path1.Value;
             }
             else
             {
-                pxxxath = Equations.GetQuickestPathToLocation(this.transform, new Node[] { currentNode, lastNode }, location);
-            }
+                path1 = Equations.GetQuickestPathToLocation(this.transform, currentNode, location);
+                path2 = Equations.GetQuickestPathToLocation(this.transform, lastNode, location);
 
-            if (pxxxath != null)
-            {
-                for (int i = 0; i < pxxxath.Length; i++)
+                float path1Length = (path1.Key) + Mathf.Abs(Vector3.Distance(currentNode.transform.position, transform.position));
+                float path2Length = (path2.Key) + Mathf.Abs(Vector3.Distance(lastNode.transform.position, transform.position));
+
+                if(path1Length < path2Length)
                 {
-                    Debug.Log("THE PATH1: " + pxxxath[i]);
+                    shortestPath = path1.Value;
+                }
+                else
+                {
+                    shortestPath = path2.Value;
+                }
+            }         
+            
+            if (shortestPath != null)
+            {
+                for (int i = 0; i < shortestPath.Length; i++)
+                {
+                    Debug.Log("THE PATH1: " + shortestPath[i]);
                 }
             }
             else
@@ -101,7 +117,6 @@ public class WaypointNavigation : MonoBehaviour
                 Debug.Log("ERROR");
             }
         }
-
     }
 
     private void FixedUpdate()

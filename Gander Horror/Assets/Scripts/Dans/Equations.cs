@@ -44,7 +44,7 @@ public static class Equations
         Node[] neighbors = _order.Peek().neighbors;
         float shortestPath = pathToShortestLocation;
         float currentPathLength = _currentPathLength;
-        
+
         #region Debug Display
         /*
         //print out the node path as it runs through
@@ -59,7 +59,7 @@ public static class Equations
         #endregion
 
         for (int i = 0; i < neighbors.Length; i++)
-        {            
+        {
             #region method one SLOWER
             /*
             UnityEngine.Debug.Log("CheckPath");
@@ -73,8 +73,8 @@ public static class Equations
                 newCurrentPathLength = Mathf.Abs(Vector3.Distance(neighbors[i].gameObject.transform.position, _order.Peek().gameObject.transform.position));
             }
             */
-            #endregion           
-            
+            #endregion
+
             #region method two FASTER
             float newCurrentPathLength = -1;
             Node lastNode = null;
@@ -98,7 +98,7 @@ public static class Equations
                 lastNode = tempStack0[k];
             }
             #endregion
-            
+
 
             if (newCurrentPathLength < shortestPath || shortestPath == -1)
             {
@@ -156,7 +156,7 @@ public static class Equations
     /// <param name="startingNode"></param>
     /// <param name="location"></param>
     /// <returns></returns>
-    public static Node[] GetQuickestPathToLocation(Transform actor, Node[] startingNodes, Node.Locations location)
+    public static KeyValuePair<float, Node[]> GetQuickestPathToLocation(Transform actor, Node startingNode, Node.Locations location)
     {
         Node[] path = null;
         List<Stack<Node>> goodPaths = new List<Stack<Node>>();
@@ -165,100 +165,99 @@ public static class Equations
         float shortestPath = -1;
         float newShortestPath = -1;
 
-        for (int k = 0; k < startingNodes.Length; k++)
-        {
-            startingNodes[k].SetVisited(true);
-            order.Clear();
-            order.Push(startingNodes[k]);
+        startingNode.SetVisited(true);
+        order.Clear();
+        order.Push(startingNode);
 
-            //check if currently in room
-            if (startingNodes[k].CheckForLocation(location) == true)
+        //check if currently in room
+        if (startingNode.CheckForLocation(location) == true)
+        {
+            KeyValuePair<float, Node[]> returnValue0 = new KeyValuePair<float, Node[]>(0, new Node[] { startingNode });
+            return returnValue0;
+        }
+
+        #region ToBe discarded
+        /*
+        while (order.Count != 0 && whileCount < 100)
+        {
+            Node newNode = null;
+            Node[] newNeighbors = order.Peek().neighbors;
+
+            for (int i = 0; i < newNeighbors.Length; i++)
             {
-                return new Node[] { startingNodes[k] };
+                Stack<Node> tempOrder = new Stack<Node>(order);
+                tempOrder.Push(newNeighbors[i]);
+                string stringTempOrder = "";
+                foreach(Node n in tempOrder)
+                {
+                    stringTempOrder += n.gameObject.name;
+                }
+
+                if (!allPaths.Contains(tempOrder)
+        !allPaths.Contains(stringTempOrder) && newNeighbors[i].CheckIfVisited() == false)
+                {                       
+                    allPaths.Add(stringTempOrder);
+                    newNode = newNeighbors[i];
+                    break;
+                }
             }
 
-            #region ToBe discarded
-            /*
-            while (order.Count != 0 && whileCount < 100)
+            //if location reached
+            if (newNode != null)
             {
-                Node newNode = null;
-                Node[] newNeighbors = order.Peek().neighbors;
-
-                for (int i = 0; i < newNeighbors.Length; i++)
+                if (newNode.CheckForLocation(location) == true)
                 {
-                    Stack<Node> tempOrder = new Stack<Node>(order);
-                    tempOrder.Push(newNeighbors[i]);
-                    string stringTempOrder = "";
-                    foreach(Node n in tempOrder)
-                    {
-                        stringTempOrder += n.gameObject.name;
-                    }
+                    order.Push(newNode);
+                    order.Peek().SetVisited(false);
+                    goodPaths.Add(order);
+                    order.Pop();
 
-                    if (!allPaths.Contains(tempOrder)
-            !allPaths.Contains(stringTempOrder) && newNeighbors[i].CheckIfVisited() == false)
-                    {                       
-                        allPaths.Add(stringTempOrder);
-                        newNode = newNeighbors[i];
-                        break;
-                    }
+                    Debug.Log("POP1");
                 }
-
-                //if location reached
-                if (newNode != null)
-                {
-                    if (newNode.CheckForLocation(location) == true)
-                    {
-                        order.Push(newNode);
-                        order.Peek().SetVisited(false);
-                        goodPaths.Add(order);
-                        order.Pop();
-
-                        Debug.Log("POP1");
-                    }
-                    //if location not reached
-                    else
-                    {
-                        Debug.Log("POP2");
-                        order.Push(newNode);
-                        order.Peek().SetVisited(true);
-                    }
-                }
+                //if location not reached
                 else
                 {
-                    Debug.Log("POP3");
-                    Debug.Log("Before: " + order.Count);
-                    string stringTempOrder = "";
-                    foreach (Node n in order)
-                    {
-                        stringTempOrder += n.gameObject.name;
-                    }
-                    allPaths.Add(stringTempOrder);
-                    order.Peek().SetVisited(false);
-                    order.Pop();
-                    Debug.Log("After: " + order.Count);
+                    Debug.Log("POP2");
+                    order.Push(newNode);
+                    order.Peek().SetVisited(true);
                 }
-
-                whileCount++;
             }
-             */
-            #endregion
-
-            Stopwatch st = new Stopwatch();
-            st.Start();
-            KeyValuePair<float, List<Stack<Node>>> values = GetAllPaths(order, location, newShortestPath, -1);
-            List<Stack<Node>> tempGoodPaths = new List<Stack<Node>>(values.Value);
-            newShortestPath = values.Key;
-            st.Stop();
-            UnityEngine.Debug.Log(string.Format("Method took {0} ms to complete", st.ElapsedMilliseconds));
-
-            for (int i = 0; i < tempGoodPaths.Count; i++)
+            else
             {
-                if (tempGoodPaths != null)
+                Debug.Log("POP3");
+                Debug.Log("Before: " + order.Count);
+                string stringTempOrder = "";
+                foreach (Node n in order)
                 {
-                    goodPaths.Add(tempGoodPaths[i]);
+                    stringTempOrder += n.gameObject.name;
                 }
+                allPaths.Add(stringTempOrder);
+                order.Peek().SetVisited(false);
+                order.Pop();
+                Debug.Log("After: " + order.Count);
+            }
+
+            whileCount++;
+        }
+         */
+        #endregion
+
+        Stopwatch st = new Stopwatch();
+        st.Start();
+        KeyValuePair<float, List<Stack<Node>>> values = GetAllPaths(order, location, newShortestPath, -1);
+        List<Stack<Node>> tempGoodPaths = new List<Stack<Node>>(values.Value);
+        newShortestPath = values.Key;
+        st.Stop();
+        UnityEngine.Debug.Log(string.Format("Method took {0} ms to complete", st.ElapsedMilliseconds));
+
+        for (int i = 0; i < tempGoodPaths.Count; i++)
+        {
+            if (tempGoodPaths != null)
+            {
+                goodPaths.Add(tempGoodPaths[i]);
             }
         }
+
 
         //get shortest path
         //sift through all node arrays
@@ -293,6 +292,8 @@ public static class Equations
             }
         }
 
-        return path;
+        KeyValuePair<float, Node[]> returnValue = new KeyValuePair<float, Node[]>(shortestPath, path);
+
+        return returnValue;
     }
 }
