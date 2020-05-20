@@ -7,6 +7,7 @@ public class WaypointNavigation : MonoBehaviour
     [SerializeField]
     private Node currentNode;
     private Vector3 currentDestination;
+    private Stack<Node> aggroPath = new Stack<Node>();
 
     private Rigidbody rb;
 
@@ -19,6 +20,9 @@ public class WaypointNavigation : MonoBehaviour
     [SerializeField]
     [Range(0, 1000)]
     private float turnSpeed;
+    [SerializeField]
+    [Range(0, 1000)]
+    private float aggroTurnSpeed;
     [Header("")]
     [SerializeField]
     [Range(0, 180)]
@@ -55,68 +59,74 @@ public class WaypointNavigation : MonoBehaviour
         //Rotate towards destination
         if (movingTowardsDestination)
         {
-            transform.rotation = Equations.RotateTowardsObj(currentDestination, this.transform, turnSpeed);
+            transform.rotation = Equations.RotateTowardsObj(currentDestination, this.transform, ((aggro == true ? aggroTurnSpeed : turnSpeed)));
         }
 
-        if (Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.L) || Input.GetKeyDown(KeyCode.J) || Input.GetKeyDown(KeyCode.H))
+        #region get path to location debug code
+        if (Input.GetKeyDown(KeyCode.K))
         {
-            Node.Locations location = new Node.Locations();
-            if (Input.GetKeyDown(KeyCode.K))
-            {
-                location = Node.Locations.Kitchen;
-            }
-            if (Input.GetKeyDown(KeyCode.L))
-            {
-                location = Node.Locations.Living_Room;
-            }
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                location = Node.Locations.Bathroom;
-            }
-            if (Input.GetKeyDown(KeyCode.H))
-            {
-                location = Node.Locations.Bedroom;
-            }
+            GetLocationOverride(Node.Locations.Kitchen);
+        }
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            GetLocationOverride(Node.Locations.Living_Room);
+        }
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            GetLocationOverride(Node.Locations.Bathroom);
+        }
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            GetLocationOverride(Node.Locations.Bedroom);
+        }
+        #endregion
 
-            KeyValuePair<float, Node[]> path1 = new KeyValuePair<float, Node[]>();
-            KeyValuePair<float, Node[]> path2 = new KeyValuePair<float, Node[]>();
-            Node[] shortestPath;
-            //Node[] pxxxath2 = null;
-            if (lastNode == null)
+    }
+
+    private void GetLocationOverride(Node.Locations _location)
+    {
+        KeyValuePair<float, Node[]> path1 = new KeyValuePair<float, Node[]>();
+        KeyValuePair<float, Node[]> path2 = new KeyValuePair<float, Node[]>();
+        Node[] shortestPath;
+        //Node[] pxxxath2 = null;
+        if (lastNode == null)
+        {
+            path1 = Equations.GetQuickestPathToLocation(this.transform, currentNode, _location);
+            shortestPath = path1.Value;
+        }
+        else
+        {
+            path1 = Equations.GetQuickestPathToLocation(this.transform, currentNode, _location);
+            path2 = Equations.GetQuickestPathToLocation(this.transform, lastNode, _location);
+
+            //find which of the two paths are shorter when taking into account the gooses current position
+            float path1Length = (path1.Key) + Mathf.Abs(Vector3.Distance(currentNode.transform.position, transform.position));
+            float path2Length = (path2.Key) + Mathf.Abs(Vector3.Distance(lastNode.transform.position, transform.position));
+
+            if (path1Length < path2Length)
             {
-                path1 = Equations.GetQuickestPathToLocation(this.transform, currentNode, location);
                 shortestPath = path1.Value;
             }
             else
             {
-                path1 = Equations.GetQuickestPathToLocation(this.transform, currentNode, location);
-                path2 = Equations.GetQuickestPathToLocation(this.transform, lastNode, location);
-
-                float path1Length = (path1.Key) + Mathf.Abs(Vector3.Distance(currentNode.transform.position, transform.position));
-                float path2Length = (path2.Key) + Mathf.Abs(Vector3.Distance(lastNode.transform.position, transform.position));
-
-                if(path1Length < path2Length)
-                {
-                    shortestPath = path1.Value;
-                }
-                else
-                {
-                    shortestPath = path2.Value;
-                }
-            }         
-            
-            if (shortestPath != null)
-            {
-                for (int i = 0; i < shortestPath.Length; i++)
-                {
-                    Debug.Log("THE PATH1: " + shortestPath[i]);
-                }
-            }
-            else
-            {
-                Debug.Log("ERROR");
+                shortestPath = path2.Value;
             }
         }
+
+        //print the path
+        if (shortestPath != null)
+        {
+            for (int i = 0; i < shortestPath.Length; i++)
+            {
+                Debug.Log("THE PATH1: " + shortestPath[i]);
+            }
+        }
+        else
+        {
+            Debug.Log("ERROR");
+        }
+
+        HurryToPlayer(shortestPath);
     }
 
     private void FixedUpdate()
@@ -138,19 +148,53 @@ public class WaypointNavigation : MonoBehaviour
             {
                 movingTowardsDestination = false;
 
-                //Random: Go immediately to next destination or wait a bit
-                int randNum = Random.Range(0, 2);
-                switch (randNum)
+                if (!aggro) //if not aggro
                 {
-                    //go immediately
-                    case 0:
-                        FindNewNode();
-                        break;
+                    //Random: Go immediately to next destination or wait a bit
+                    int randNum = Random.Range(0, 2);
+                    switch (randNum)
+                    {
+                        //go immediately
+                        case 0:
+                            FindNewNode();
+                            break;
 
-                    //wait a tad
-                    case 1:
-                        StartCoroutine(GooseWaitTime());
-                        break;
+                        //wait a tad
+                        case 1:
+                            StartCoroutine(GooseWaitTime());
+                            break;
+                    }
+                }
+                else //if aggro
+                {
+                    lastNode = aggroPath.Peek();
+                    aggroPath.Pop();
+                    if (aggroPath.Count > 0)
+                    {
+                        currentDestination = aggroPath.Peek().GetDestination();
+                        currentNode = aggroPath.Peek();
+                        StartCoroutine(GooseTurnBeforeMoving()); 
+                    }
+                    else
+                    {
+                        aggro = false;
+                        //investigate room behavior?
+
+                        //temp
+                        int randNum = Random.Range(0, 2);
+                        switch (randNum)
+                        {
+                            //go immediately
+                            case 0:
+                                FindNewNode();
+                                break;
+
+                            //wait a tad
+                            case 1:
+                                StartCoroutine(GooseWaitTime());
+                                break;
+                        }
+                    }
                 }
             }
         }
@@ -173,9 +217,9 @@ public class WaypointNavigation : MonoBehaviour
     {
         float angle = Equations.GetAngleBetweenTwoPoints(currentDestination, this.transform);
 
-        while (angle > maxTurnRotation)
+        while (angle > (aggro ? maxTurnRotation/2 : maxTurnRotation))
         {
-            transform.rotation = Equations.RotateTowardsObj(currentDestination, this.transform, turnSpeed);
+            transform.rotation = Equations.RotateTowardsObj(currentDestination, this.transform, ((aggro == true ? aggroTurnSpeed : turnSpeed)));
             angle = Equations.GetAngleBetweenTwoPoints(currentDestination, this.transform);
             yield return null;
         }
@@ -198,9 +242,16 @@ public class WaypointNavigation : MonoBehaviour
 
     //When player makes a loud noise forget current destination and RUN to the node nearest the noise made, starts walking when he reaches point
     //-very brief pause tho
-    public void HurryToPlayer(Node Destination)
+    public void HurryToPlayer(Node[] path)
     {
-
+        //play HONK! (very loud)
+        aggro = true;
+        movingTowardsDestination = false;
+        lastNode = currentNode;
+        aggroPath = new Stack<Node>(path);
+        currentDestination = aggroPath.Peek().GetDestination();
+        currentNode = aggroPath.Peek();
+        StartCoroutine(GooseTurnBeforeMoving());
     }
 }
 

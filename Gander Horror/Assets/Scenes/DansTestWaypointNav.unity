@@ -695,7 +695,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 351400572}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -5.29, y: 17.081, z: -17.006}
+  m_LocalPosition: {x: 0.19099998, y: 17.081, z: -21.46}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2007762977}
@@ -714,8 +714,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighbors:
-  - {fileID: 2086622821}
+  - {fileID: 176574591}
   - {fileID: 918199707}
+  - {fileID: 1703134250}
   locations: 
   radius: 0.18
 --- !u!1 &362554978
@@ -2131,7 +2132,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 918199705}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -6.238, y: 17.081, z: -13.737}
+  m_LocalPosition: {x: -5.2699995, y: 17.081, z: -14.99}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 948273529}
@@ -2538,8 +2539,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentNode: {fileID: 351400574}
   walkSpeed: 0.9
-  runSpeed: 0
-  turnSpeed: 148
+  runSpeed: 3.2
+  turnSpeed: 161
+  aggroTurnSpeed: 388
   maxTurnRotation: 75
   minDistanceToDestination: 0.064
   chanceForNewNode: 100
@@ -3557,7 +3559,6 @@ Transform:
   - {fileID: 351400573}
   - {fileID: 176574592}
   - {fileID: 467832778}
-  - {fileID: 2086622820}
   m_Father: {fileID: 867884322}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3722,52 +3723,3 @@ Transform:
   m_Father: {fileID: 1382826266}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2086622819
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2086622820}
-  - component: {fileID: 2086622821}
-  m_Layer: 0
-  m_Name: Node1 (24)
-  m_TagString: Untagged
-  m_Icon: {fileID: -5442936267250999957, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2086622820
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2086622819}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -5.18, y: 17.081, z: -12.57}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 2007762977}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2086622821
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2086622819}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9a64a205c6c5964189ee0469421b0b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  neighbors:
-  - {fileID: 176574591}
-  - {fileID: 918199707}
-  - {fileID: 1703134250}
-  locations: 
-  radius: 0.18

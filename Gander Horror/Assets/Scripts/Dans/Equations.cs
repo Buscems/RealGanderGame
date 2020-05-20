@@ -242,6 +242,8 @@ public static class Equations
          */
         #endregion
 
+        //see how fast the math takes
+        //IF IT GOES ABOVE 10 MILLISECONDS TELL DAN TO SAVE ALL PATHS AT BEGINNING OF GAME
         Stopwatch st = new Stopwatch();
         st.Start();
         KeyValuePair<float, List<Stack<Node>>> values = GetAllPaths(order, location, newShortestPath, -1);
