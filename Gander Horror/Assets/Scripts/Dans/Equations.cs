@@ -41,7 +41,7 @@ public static class Equations
     public static KeyValuePair<float, List<Stack<Node>>> GetAllPaths(Stack<Node> _order, Node.Locations _location, float pathToShortestLocation, float _currentPathLength)
     {
         List<Stack<Node>> paths = new List<Stack<Node>>();
-        Node[] neighbors = _order.Peek().neighbors;
+        Node[] neighbors = _order.Peek().allNeighbors.ToArray();
         float shortestPath = pathToShortestLocation;
         float currentPathLength = _currentPathLength;
 
@@ -106,40 +106,48 @@ public static class Equations
                 tempStack = new Stack<Node>(tempStack);
 
                 //if the right location, add stack to list
-                if (neighbors[i].CheckForLocation(_location) == true)
+                UnityEngine.Debug.Log(neighbors.Length);
+                try
                 {
-                    tempStack.Push(neighbors[i]);
-                    paths.Add(tempStack);
-                    shortestPath = newCurrentPathLength;
-
-                    #region Debug Display
-                    //print out the node path as it runs through
-                    Stack<Node> debugStack = new Stack<Node>(tempStack);
-                    while (debugStack.Count > 0)
+                    if (neighbors[i].CheckForLocation(_location) == true)
                     {
-                        debugStack.Pop();
-                    }
-                    #endregion
-                }
-                else
-                {
-                    //if next neighbor hasnt been visited yet, check that path
-                    if (neighbors[i].CheckIfVisited() == false)
-                    {
-                        neighbors[i].SetVisited(true);
                         tempStack.Push(neighbors[i]);
+                        paths.Add(tempStack);
+                        shortestPath = newCurrentPathLength;
 
-                        //add all future paths to the stack of lists recursively
-                        KeyValuePair<float, List<Stack<Node>>> keyValue = GetAllPaths(tempStack, _location, shortestPath, newCurrentPathLength);
-                        List<Stack<Node>> allFuturePaths = keyValue.Value;
-                        shortestPath = keyValue.Key;
-
-                        for (int k = 0; k < allFuturePaths.Count; k++)
+                        #region Debug Display
+                        //print out the node path as it runs through
+                        Stack<Node> debugStack = new Stack<Node>(tempStack);
+                        while (debugStack.Count > 0)
                         {
-                            paths.Add(allFuturePaths[k]);
+                            debugStack.Pop();
                         }
-                        neighbors[i].SetVisited(false);
+                        #endregion
                     }
+                    else
+                    {
+                        //if next neighbor hasnt been visited yet, check that path
+                        if (neighbors[i].CheckIfVisited() == false)
+                        {
+                            neighbors[i].SetVisited(true);
+                            tempStack.Push(neighbors[i]);
+
+                            //add all future paths to the stack of lists recursively
+                            KeyValuePair<float, List<Stack<Node>>> keyValue = GetAllPaths(tempStack, _location, shortestPath, newCurrentPathLength);
+                            List<Stack<Node>> allFuturePaths = keyValue.Value;
+                            shortestPath = keyValue.Key;
+
+                            for (int k = 0; k < allFuturePaths.Count; k++)
+                            {
+                                paths.Add(allFuturePaths[k]);
+                            }
+                            neighbors[i].SetVisited(false);
+                        }
+                    }
+                }
+                catch
+                {
+                    UnityEngine.Debug.Log("ERROR: " + neighbors[i].gameObject.name);
                 }
             }
         }

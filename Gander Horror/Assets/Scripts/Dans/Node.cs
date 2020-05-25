@@ -4,10 +4,18 @@ using UnityEngine;
 
 public class Node : MonoBehaviour
 {
-    public enum Locations { Kitchen, Bathroom, Bedroom, Living_Room };
+    public enum Locations { Other, Kitchen, Bathroom, Bedroom, Living_Room, Main_Entrance };
 
-    public Node[] neighbors;
-    public Locations[] locations;
+    [System.Serializable]
+    public class NeighborClasses
+    {
+        public string roomName;
+        public Locations roomLocation;
+        public Node[] neighbors;
+    }
+    public NeighborClasses[] neighborClasses;
+
+    public Locations location;
 
     [Tooltip("When Goose goes to this nodes location, it will choose a random point near this postion based on the radius; Make sure radius doesn't go through walls. Y pos will not be affected by radius.")]
     [SerializeField]
@@ -28,7 +36,32 @@ public class Node : MonoBehaviour
     private Node[] savedPath_Bathroom = null;
     private Node[] savedPath_Bedroom = null;
     private Node[] savedPath_LivingRoom = null;
+    private Node[] savedPath_Main_Entrance = null;
+    //
 
+    [HideInInspector]
+    public List<Node> allNeighbors = new List<Node>();
+    List<Node> neighborsInRoom = new List<Node>();
+    List<Node> neighborsOutsideOfRoom = new List<Node>();
+
+    private void Start()
+    {
+        for (int i = 0; i < neighborClasses.Length; i++)
+        {
+            for (int k = 0; k < neighborClasses[i].neighbors.Length; k++)
+            {
+                if (neighborClasses[i].roomLocation.Equals(location))
+                {
+                    neighborsInRoom.Add(neighborClasses[i].neighbors[k]);
+                }
+                else
+                {
+                    neighborsOutsideOfRoom.Add(neighborClasses[i].neighbors[k]);
+                }
+                allNeighbors.Add(neighborClasses[i].neighbors[k]);
+            }
+        }
+    }
 
     //Give goose new point to go to
     public Vector3 GetDestination()
@@ -41,16 +74,23 @@ public class Node : MonoBehaviour
     }
 
     //Get new neighbor
-    public Node GetNewNeighbor(Node lastDestination, float chanceForNewNode)
+    public Node GetNewNeighbor(Node lastDestination, float chanceForNewNode /*,condition*/)
     {
+        //get new room neighbor
+        //get same room neighbor
+
+        //change to be equal to result
+        List<Node> nodeToReturn = new List<Node>(allNeighbors);
+        //
+
         int randNode = 0;
-        if (neighbors.Length > 1 && lastDestination != null)
+        if (nodeToReturn.Count > 1 && lastDestination != null)
         {
             int randNum = Random.Range(0, 100);
 
             if (randNum < chanceForNewNode)
             {
-                List<Node> neighborsExcludingLastDestination = new List<Node>(neighbors);
+                List<Node> neighborsExcludingLastDestination = new List<Node>(nodeToReturn);
                 if (neighborsExcludingLastDestination.Contains(lastDestination))
                 {
                     neighborsExcludingLastDestination.Remove(lastDestination);
@@ -60,11 +100,11 @@ public class Node : MonoBehaviour
             }
             else
             {
-                return neighbors[randNode];
+                return nodeToReturn[randNode];
             }
         }
-        randNode = Random.Range(0, neighbors.Length);
-        return neighbors[randNode];
+        randNode = Random.Range(0, nodeToReturn.Count);
+        return nodeToReturn[randNode];
     }
 
     //return visitation check; For when determining the shortest path to take via the WaypointNavigation script
@@ -82,13 +122,12 @@ public class Node : MonoBehaviour
     //returns true if this node is in the location the Goose is looking for
     public bool CheckForLocation(Locations _location)
     {
-        for (int i = 0; i < locations.Length; i++)
+
+        if (location.Equals(_location))
         {
-            if (locations[i].Equals(_location))
-            {
-                return true;
-            }
+            return true;
         }
+
         return false;
     }
 

@@ -23,7 +23,7 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] [Range(0f, 4f)] float moveSpeed;
 
-    public Transform groundCheck;
+    //public Transform groundCheck;
     public float groundDist;
     public LayerMask groundMask;
 

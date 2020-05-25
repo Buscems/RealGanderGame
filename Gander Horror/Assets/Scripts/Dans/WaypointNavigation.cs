@@ -79,6 +79,10 @@ public class WaypointNavigation : MonoBehaviour
         {
             GetLocationOverride(Node.Locations.Bedroom);
         }
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            GetLocationOverride(Node.Locations.Main_Entrance);
+        }
         #endregion
 
     }
