@@ -23,9 +23,11 @@ public class GooseDetectionLogic : MonoBehaviour
     void Update()
     {
         //update detection time depending on distance, line of sight, and viewpoint
+        //0  -> player outside of detection
+        //minLookDetectionTime  -> player seen
         currentDetectionTime += Time.deltaTime / RaycastDetection();
         currentDetectionTime = Mathf.Clamp(currentDetectionTime, 0, minLookDetectionTime);
-        Debug.Log(currentDetectionTime);
+
     }
 
     private float RaycastDetection()
