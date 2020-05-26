@@ -48,6 +48,9 @@ public class PlayerMovement : MonoBehaviour
     public Transform head;
     public Transform orientation;
     public CapsuleCollider colliderPlayer;
+    public Transform leanLeft;
+    public Transform leanRight;
+    public Transform noLean;
 
     //Rotation and look
     private float xRotation;
@@ -55,6 +58,10 @@ public class PlayerMovement : MonoBehaviour
     private float sensMultiplier = 1f;
     float lookX, lookY;
     private float desiredX;
+
+    bool isLeaning;
+    [SerializeField]
+    Transform currentLean;
 
     private void Awake()
     {
@@ -77,6 +84,8 @@ public class PlayerMovement : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
+        currentLean = noLean;
+
     }
     
     void Update()
@@ -90,6 +99,21 @@ public class PlayerMovement : MonoBehaviour
         Movement();
 
         Look();
+
+        if (myPlayer.GetButtonDown("LeanLeft"))
+        {
+            currentLean = leanLeft;
+        }
+        else if (myPlayer.GetButtonDown("LeanRight"))
+        {
+            currentLean = leanRight;
+        }
+        else if(myPlayer.GetButtonUp("LeanLeft") || myPlayer.GetButtonUp("LeanRight"))
+        {
+            currentLean = noLean;
+        }
+
+        LeanCamera(currentLean);
 
     }
 
@@ -109,6 +133,10 @@ public class PlayerMovement : MonoBehaviour
     void FixedMovement()
     {
         rb.MovePosition(rb.position + velocity * speed * Time.fixedDeltaTime);
+        if(velocity == Vector3.zero)
+        {
+            rb.velocity = Vector3.zero;
+        }
     }
 
     private void Look()
@@ -134,6 +162,13 @@ public class PlayerMovement : MonoBehaviour
         //Perform the rotations
         playerCam.transform.localRotation = Quaternion.Euler(xRotation, desiredX, 0);
         orientation.transform.localRotation = Quaternion.Euler(0, desiredX, 0);
+    }
+
+    private void LeanCamera(Transform lean)
+    {
+
+        head.transform.position = new Vector3(Mathf.Lerp(head.transform.position.x, lean.position.x, moveSpeed * Time.deltaTime), head.position.y, Mathf.Lerp(head.transform.position.z, lean.position.z, moveSpeed * Time.deltaTime));
+
     }
 
     void Crouch()
