@@ -51,6 +51,9 @@ public class Look : MonoBehaviour
     
     void Update()
     {
+
+        //transform.position = new Vector3(body.position.x, transform.position.y, body.position.z);
+
         if (usingController)
         {
             lookDir.x = myPlayer.GetAxis("LookHorizontal") * sensitivity * Time.deltaTime;
@@ -64,9 +67,12 @@ public class Look : MonoBehaviour
         Xrotation -= lookDir.y;
         Xrotation = Mathf.Clamp(Xrotation, -90f, 90f);
 
-        transform.localRotation = Quaternion.Euler(Xrotation, 0f, 0f);
-
         body.Rotate(Vector3.up * lookDir.x);
+
+        this.transform.Rotate(Vector3.up * lookDir.x);
+
+        transform.localRotation = Quaternion.Euler(Xrotation, transform.localRotation.y, 0f);
+
     }
     //[REWIRED METHODS]
     //these two methods are for ReWired, if any of you guys have any questions about it I can answer them, but you don't need to worry about this for working on the game - Buscemi

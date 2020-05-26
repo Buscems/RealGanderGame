@@ -59,7 +59,7 @@ public class PlayerMovement : MonoBehaviour
         useController = false;
         cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, 2.95f, cameraObject.transform.position.z);
 
-        targetY = transform.position.y - 0.7f;
+        targetY = transform.position.y - 0.5f;
         mainY = transform.position.y + 0.3f;
         setSpeed = speed;
 
@@ -143,44 +143,7 @@ public class PlayerMovement : MonoBehaviour
         velocity = new Vector3(myPlayer.GetAxis("MoveLeftRight"), velocityY, myPlayer.GetAxis("MoveForwardBack"));
         velocity = transform.worldToLocalMatrix.inverse * velocity;
 
-        UpPos = new Vector3(cameraObject.transform.position.x, mainY, cameraObject.transform.position.z);
-        DownPos = new Vector3(cameraObject.transform.position.x, targetY, cameraObject.transform.position.z);
-
-        if (isCrouch)
-        {
-            colliderPlayer.height = 1.0f;
-
-            cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, Mathf.Lerp(cameraObject.transform.position.y, DownPos.y, moveSpeed * Time.deltaTime), cameraObject.transform.position.z);
-        }
-        else
-        {
-            colliderPlayer.height = 2.0f;
-
-            cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, Mathf.Lerp(cameraObject.transform.position.y, UpPos.y, moveSpeed * Time.deltaTime), cameraObject.transform.position.z);
-        }
-
-        if (!toggleCrouch)
-        {
-            if (myPlayer.GetButtonDown("Crouch"))
-            {
-                isCrouch = true;
-                speed = speed - 4;
-            }
-
-            if (myPlayer.GetButtonUp("Crouch"))
-            {
-                isCrouch = false;
-                speed = setSpeed;
-            }
-        }
-        else
-        {
-            if (myPlayer.GetButtonDown("Crouch"))
-            {
-                isCrouch = !isCrouch;
-                speed = speed == setSpeed ? speed = speed - 4 : speed = setSpeed;
-            }
-        }
+        Crouch();
     }
 
     void FixedMovement()
@@ -195,15 +158,18 @@ public class PlayerMovement : MonoBehaviour
 
         if (isCrouch)
         {
+
             colliderPlayer.height = 1.0f;
+            colliderPlayer.center = new Vector3(0, -.5f, 0);
 
             cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, Mathf.Lerp(cameraObject.transform.position.y, DownPos.y, moveSpeed * Time.deltaTime), cameraObject.transform.position.z);
         }
         else
         {
             colliderPlayer.height = 2.0f;
+            colliderPlayer.center = new Vector3(0, 0, 0);
 
-            //cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, Mathf.Lerp(cameraObject.transform.position.y, UpPos.y, moveSpeed * Time.deltaTime), cameraObject.transform.position.z);
+            cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, Mathf.Lerp(cameraObject.transform.position.y, UpPos.y, moveSpeed * Time.deltaTime), cameraObject.transform.position.z);
         }
 
         if (!toggleCrouch)
