@@ -224,12 +224,16 @@ public class PlayerMovement : MonoBehaviour
             colliderPlayer.height = 1.0f;
             colliderPlayer.center = new Vector3(0, -.5f, 0);
 
+            head.GetComponent<Collider>().isTrigger = true;
+
             head.transform.position = new Vector3(head.transform.position.x, Mathf.Lerp(head.transform.position.y, DownPos.y, moveSpeed * Time.deltaTime), head.transform.position.z);
         }
         else
         {
             colliderPlayer.height = 2.0f;
             colliderPlayer.center = new Vector3(0, 0, 0);
+
+            head.GetComponent<Collider>().isTrigger = false;
 
             head.transform.position = new Vector3(head.transform.position.x, Mathf.Lerp(head.transform.position.y, UpPos.y, moveSpeed * Time.deltaTime), head.transform.position.z);
         }
