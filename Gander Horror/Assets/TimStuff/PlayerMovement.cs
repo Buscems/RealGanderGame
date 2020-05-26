@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Rewired;
 using Rewired.ControllerExtensions;
+using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -44,6 +45,7 @@ public class PlayerMovement : MonoBehaviour
     public bool toggleCrouch;
 
     //Assingables
+    [Header("Things to assign")]
     public Transform playerCam;
     public Transform head;
     public Transform orientation;
@@ -51,6 +53,7 @@ public class PlayerMovement : MonoBehaviour
     public Transform leanLeft;
     public Transform leanRight;
     public Transform noLean;
+    public Transform currentPickup;
 
     //Rotation and look
     private float xRotation;
@@ -59,9 +62,14 @@ public class PlayerMovement : MonoBehaviour
     float lookX, lookY;
     private float desiredX;
 
-    bool isLeaning;
-    [SerializeField]
     Transform currentLean;
+
+    //picking up
+    [Header("Item Pickup")]
+    public Image cursor;
+    public float maxPickupDistance;
+    public LayerMask pickupMask;
+    bool hasPickup;
 
     private void Awake()
     {
@@ -74,6 +82,8 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         useController = false;
+
+        cursor.color = Color.white;
 
         targetY = transform.position.y - 0.5f;
         mainY = transform.position.y + 0.3f;
@@ -99,6 +109,8 @@ public class PlayerMovement : MonoBehaviour
         Movement();
 
         Look();
+
+        Pickup();
 
         if (myPlayer.GetButtonDown("LeanLeft"))
         {
@@ -166,8 +178,38 @@ public class PlayerMovement : MonoBehaviour
 
     private void LeanCamera(Transform lean)
     {
-
         head.transform.position = new Vector3(Mathf.Lerp(head.transform.position.x, lean.position.x, moveSpeed * Time.deltaTime), head.position.y, Mathf.Lerp(head.transform.position.z, lean.position.z, moveSpeed * Time.deltaTime));
+    }
+
+    private void Pickup()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(origin: playerCam.position, direction: playerCam.forward, out hit, maxPickupDistance, pickupMask))
+        {
+            cursor.color = new Color(0, 255, 0, .5f);
+            if (myPlayer.GetButtonDown("Interact"))
+            {
+                if (!hasPickup)
+                {
+                    hit.transform.gameObject.GetComponent<Rigidbody>().useGravity = false;
+                    hit.transform.gameObject.GetComponent<Collider>().isTrigger = true;
+                    currentPickup.position = hit.transform.position;
+                    hit.transform.SetParent(currentPickup);
+                    hasPickup = true;
+                }
+                else
+                {
+                    hit.transform.gameObject.GetComponent<Rigidbody>().useGravity = true;
+                    hit.transform.gameObject.GetComponent<Collider>().isTrigger = false;
+                    hit.transform.SetParent(null);
+                    hasPickup = false;
+                }
+            }
+        }
+        else
+        {
+            cursor.color = new Color(255, 255, 255, .5f);
+        }
 
     }
 
