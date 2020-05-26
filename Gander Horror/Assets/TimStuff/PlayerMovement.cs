@@ -15,9 +15,6 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Number identifier for each player, must be above 0")]
     public int playerNum;
 
-    public GameObject cameraObject;
-    public CapsuleCollider colliderPlayer;
-
     public float speed;
     public float gravity;
 
@@ -46,6 +43,19 @@ public class PlayerMovement : MonoBehaviour
 
     public bool toggleCrouch;
 
+    //Assingables
+    public Transform playerCam;
+    public Transform head;
+    public Transform orientation;
+    public CapsuleCollider colliderPlayer;
+
+    //Rotation and look
+    private float xRotation;
+    public float sensitivity;
+    private float sensMultiplier = 1f;
+    float lookX, lookY;
+    private float desiredX;
+
     private void Awake()
     {
         //Rewired Code
@@ -57,7 +67,6 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         useController = false;
-        cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, 2.95f, cameraObject.transform.position.z);
 
         targetY = transform.position.y - 0.5f;
         mainY = transform.position.y + 0.3f;
@@ -65,71 +74,22 @@ public class PlayerMovement : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();
 
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
     }
     
     void Update()
     {
-        /*
-        if (useController == false)
+
+        if (Cursor.visible)
         {
-            
-            UpPos = new Vector3(cameraObject.transform.position.x, mainY, cameraObject.transform.position.z);
-            DownPos = new Vector3(cameraObject.transform.position.x, targetY, cameraObject.transform.position.z);
-
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundDist, groundMask);
-
-            if(isGrounded && velocity.y < 0)
-            {
-                velocity.y = -2f;
-            }
-
-            velocity.y += gravity * Time.deltaTime;
-
-            if (isCrouch)
-            {
-                colliderPlayer.height = 1.0f;
-
-                cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, Mathf.Lerp(cameraObject.transform.position.y, DownPos.y, moveSpeed * Time.deltaTime), cameraObject.transform.position.z);
-            }
-
-            if (isCrouch == false)
-            {
-                colliderPlayer.height = 2.0f;
-
-                cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, Mathf.Lerp(cameraObject.transform.position.y, UpPos.y, moveSpeed * Time.deltaTime), cameraObject.transform.position.z);
-            }
-
-            if (Input.GetKeyDown(KeyCode.LeftControl))
-            {
-                isCrouch = true;
-                speed = speed - 4;
-            }
-
-            if (Input.GetKeyUp(KeyCode.LeftControl))
-            {
-                isCrouch = false;
-                speed = setSpeed;
-            }
-
-            if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
-            {
-                speed = speed + 4;
-            }
-
-            if (Input.GetKeyUp(KeyCode.LeftShift) || Input.GetKeyUp(KeyCode.RightShift))
-            {
-                speed = setSpeed;
-            }
-
+            Cursor.visible = false;
         }
-
-        if (useController)
-        {
-            
-        }
-        */
 
         Movement();
+
+        Look();
 
     }
 
@@ -141,7 +101,7 @@ public class PlayerMovement : MonoBehaviour
     void Movement()
     {
         velocity = new Vector3(myPlayer.GetAxis("MoveLeftRight"), velocityY, myPlayer.GetAxis("MoveForwardBack"));
-        velocity = transform.worldToLocalMatrix.inverse * velocity;
+        velocity = orientation.transform.worldToLocalMatrix.inverse * velocity;
 
         Crouch();
     }
@@ -151,10 +111,35 @@ public class PlayerMovement : MonoBehaviour
         rb.MovePosition(rb.position + velocity * speed * Time.fixedDeltaTime);
     }
 
+    private void Look()
+    {
+        if (useController)
+        {
+            lookX = myPlayer.GetAxis("LookX") * sensitivity * Time.deltaTime * sensMultiplier;
+            lookY = myPlayer.GetAxis("LookY") * sensitivity * Time.deltaTime * sensMultiplier;
+        }
+        else
+        {
+            lookX = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime * sensMultiplier;
+            lookY = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime * sensMultiplier;
+        }
+        //Find current look rotation
+        Vector3 rot = playerCam.transform.localRotation.eulerAngles;
+        desiredX = rot.y + lookX;
+
+        //Rotate, and also make sure we dont over- or under-rotate.
+        xRotation -= lookY;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+
+        //Perform the rotations
+        playerCam.transform.localRotation = Quaternion.Euler(xRotation, desiredX, 0);
+        orientation.transform.localRotation = Quaternion.Euler(0, desiredX, 0);
+    }
+
     void Crouch()
     {
-        UpPos = new Vector3(cameraObject.transform.position.x, mainY, cameraObject.transform.position.z);
-        DownPos = new Vector3(cameraObject.transform.position.x, targetY, cameraObject.transform.position.z);
+        UpPos = new Vector3(head.transform.position.x, mainY, head.transform.position.z);
+        DownPos = new Vector3(head.transform.position.x, targetY, head.transform.position.z);
 
         if (isCrouch)
         {
@@ -162,14 +147,14 @@ public class PlayerMovement : MonoBehaviour
             colliderPlayer.height = 1.0f;
             colliderPlayer.center = new Vector3(0, -.5f, 0);
 
-            cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, Mathf.Lerp(cameraObject.transform.position.y, DownPos.y, moveSpeed * Time.deltaTime), cameraObject.transform.position.z);
+            head.transform.position = new Vector3(head.transform.position.x, Mathf.Lerp(head.transform.position.y, DownPos.y, moveSpeed * Time.deltaTime), head.transform.position.z);
         }
         else
         {
             colliderPlayer.height = 2.0f;
             colliderPlayer.center = new Vector3(0, 0, 0);
 
-            cameraObject.transform.position = new Vector3(cameraObject.transform.position.x, Mathf.Lerp(cameraObject.transform.position.y, UpPos.y, moveSpeed * Time.deltaTime), cameraObject.transform.position.z);
+            head.transform.position = new Vector3(head.transform.position.x, Mathf.Lerp(head.transform.position.y, UpPos.y, moveSpeed * Time.deltaTime), head.transform.position.z);
         }
 
         if (!toggleCrouch)
