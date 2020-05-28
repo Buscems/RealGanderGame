@@ -54,6 +54,7 @@ public class PlayerMovement : MonoBehaviour
     public Transform leanRight;
     public Transform noLean;
     public Transform currentPickup;
+    public Camera pickupCamera;
 
     //Rotation and look
     private float xRotation;
@@ -76,12 +77,20 @@ public class PlayerMovement : MonoBehaviour
         //Rewired Code
         myPlayer = ReInput.players.GetPlayer(playerNum - 1);
         ReInput.ControllerConnectedEvent += OnControllerConnected;
+        ReInput.ControllerDisconnectedEvent += OnControllerDisconnected;
         CheckController(myPlayer);
     }
 
     void Start()
     {
-        useController = false;
+        if (myPlayer.controllers.joystickCount > 0)
+        {
+            useController = true;
+        }
+        else
+        {
+            useController = false;
+        }
 
         cursor.color = Color.white;
 
@@ -155,8 +164,8 @@ public class PlayerMovement : MonoBehaviour
     {
         if (useController)
         {
-            lookX = myPlayer.GetAxis("LookX") * sensitivity * Time.deltaTime * sensMultiplier;
-            lookY = myPlayer.GetAxis("LookY") * sensitivity * Time.deltaTime * sensMultiplier;
+            lookX = myPlayer.GetAxis("LookHorizontal") * sensitivity * Time.deltaTime * sensMultiplier;
+            lookY = myPlayer.GetAxis("LookVertical") * sensitivity * Time.deltaTime * sensMultiplier;
         }
         else
         {
@@ -186,6 +195,7 @@ public class PlayerMovement : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(origin: playerCam.position, direction: playerCam.forward, out hit, maxPickupDistance, pickupMask))
         {
+            Debug.Log("Hit");
             cursor.color = new Color(0, 255, 0, .5f);
             if (myPlayer.GetButtonDown("Interact"))
             {
@@ -208,6 +218,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
+            Debug.Log("Miss");
             cursor.color = new Color(255, 255, 255, .5f);
         }
 
@@ -267,6 +278,14 @@ public class PlayerMovement : MonoBehaviour
     void OnControllerConnected(ControllerStatusChangedEventArgs arg)
     {
         CheckController(myPlayer);
+        useController = true;
+    }
+
+    void OnControllerDisconnected(ControllerStatusChangedEventArgs arg)
+    {
+
+        useController = false;
+
     }
 
     void CheckController(Player player)
