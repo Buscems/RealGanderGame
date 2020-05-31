@@ -29,7 +29,7 @@ public class GooseDetectionLogic : MonoBehaviour
         currentDetectionTime = Mathf.Clamp(currentDetectionTime, 0, minLookDetectionTime);
 
 #if UNITY_EDITOR
-        Debug.Log("Time: " + currentDetectionTime);
+        //Debug.Log("Time: " + currentDetectionTime);
 #endif
     }
 

@@ -22,7 +22,13 @@ public class WaypointNavigation : MonoBehaviour
     private float walkSpeed;
     [SerializeField]
     [Range(0, 10)]
+    private float walkAcceleration;
+    [SerializeField]
+    [Range(0, 10)]
     private float runSpeed;
+    [SerializeField]
+    [Range(0, 10)]
+    private float runAcceleration;
     [SerializeField]
     [Range(0, 1000)]
     private float turnSpeed;
@@ -60,6 +66,7 @@ public class WaypointNavigation : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();
         currentDestination = currentNode.GetDestination();
+        UpdateNavMesh(currentDestination, false);
     }
 
     void Update()
@@ -152,7 +159,7 @@ public class WaypointNavigation : MonoBehaviour
         if (movingTowardsDestination)
         {
             float movementSpeed = aggro ? runSpeed : walkSpeed;
-            rb.MovePosition((transform.position + (transform.forward * movementSpeed * Time.deltaTime)));
+            //rb.MovePosition((transform.position + (transform.forward * movementSpeed * Time.deltaTime)));
 
             //if goose reaches its destination
             //if go to next destination if the current angle to the new destination exceeds var max turn rotation, the goose will turn before moving to next destination
@@ -162,7 +169,16 @@ public class WaypointNavigation : MonoBehaviour
 
                 if (!aggro) //if not aggro
                 {
+                    if (navMeshAgent.autoBraking)
+                    {
+                        StartCoroutine(GooseWaitTime());                      
+                    }
+                    else
+                    {
+                        FindNewNode();
+                    }
                     //Random: Go immediately to next destination or wait a bit
+                    /*
                     int randNum = Random.Range(0, 2);
                     switch (randNum)
                     {
@@ -176,6 +192,7 @@ public class WaypointNavigation : MonoBehaviour
                             StartCoroutine(GooseWaitTime());
                             break;
                     }
+                    */
                 }
                 else //if aggro
                 {
@@ -192,6 +209,17 @@ public class WaypointNavigation : MonoBehaviour
                         aggro = false;
                         //investigate room behavior?
 
+
+                        if (navMeshAgent.autoBraking)
+                        {                          
+                            StartCoroutine(GooseWaitTime());
+                        }
+                        else
+                        {
+                            FindNewNode();
+                        }
+
+                        /*
                         //temp
                         int randNum = Random.Range(0, 2);
                         switch (randNum)
@@ -206,6 +234,7 @@ public class WaypointNavigation : MonoBehaviour
                                 StartCoroutine(GooseWaitTime());
                                 break;
                         }
+                        */
                     }
                 }
             }
@@ -236,11 +265,41 @@ public class WaypointNavigation : MonoBehaviour
             yield return null;
         }
 
+        if (aggro)
+        {
+            if (aggroPath.Count == 1)
+            {
+                navMeshAgent.autoBraking = true;
+            }
+            else
+            {
+                navMeshAgent.autoBraking = false;
+            }
+            UpdateNavMesh(currentDestination, true);
+        }
+        else
+        {
+            int randNum = Random.Range(0, 2);
+            switch (randNum)
+            {
+                //auto-brake at next location
+                case 0:
+                    navMeshAgent.autoBraking = true;
+                    break;
+
+                //dont autobrake at next location
+                case 1:
+                    navMeshAgent.autoBraking = false;
+                    break;
+            }
+            UpdateNavMesh(currentDestination, false);
+        }
         movingTowardsDestination = true;
     }
 
     private IEnumerator GooseWaitTime()
     {
+        Debug.Log("WAITING");
         yield return new WaitForSeconds(Random.Range(1, maxPotentiaGooseWaitTime));
         FindNewNode();
     }
@@ -266,9 +325,26 @@ public class WaypointNavigation : MonoBehaviour
         StartCoroutine(GooseTurnBeforeMoving());
     }
 
-    private void UpdateNavMesh()
+    private void UpdateNavMesh(Vector3 _position, bool _isAggro)
     {
-        navMeshAgent.SetDestination(player.position);
+        navMeshAgent.SetDestination(_position);
+        SetNewNavVariables(_isAggro);
+    }
+
+    private void SetNewNavVariables(bool _isAggro)
+    {
+        if (_isAggro)
+        {
+            navMeshAgent.speed = runSpeed;
+            navMeshAgent.angularSpeed = aggroTurnSpeed;
+            navMeshAgent.acceleration = runAcceleration;
+        }
+        else
+        {
+            navMeshAgent.speed = walkSpeed;
+            navMeshAgent.angularSpeed = turnSpeed;
+            navMeshAgent.acceleration = walkAcceleration;
+        }
     }
 }
 
