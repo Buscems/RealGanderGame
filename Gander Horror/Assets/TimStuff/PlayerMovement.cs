@@ -195,7 +195,7 @@ public class PlayerMovement : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(origin: playerCam.position, direction: playerCam.forward, out hit, maxPickupDistance, pickupMask))
         {
-            Debug.Log("Hit");
+            //Debug.Log("Hit");
             cursor.color = new Color(0, 255, 0, .5f);
             if (myPlayer.GetButtonDown("Interact"))
             {
@@ -218,7 +218,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            Debug.Log("Miss");
+            //Debug.Log("Miss");
             cursor.color = new Color(255, 255, 255, .5f);
         }
 

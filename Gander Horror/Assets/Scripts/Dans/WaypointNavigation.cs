@@ -1,9 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class WaypointNavigation : MonoBehaviour
 {
+    [Header("Nav Mesh")]
+    [SerializeField] private Transform player;
+    private NavMeshAgent navMeshAgent;
+
+    [Header("Node Logic")]
     [SerializeField]
     private Node currentNode;
     private Vector3 currentDestination;
@@ -50,6 +56,8 @@ public class WaypointNavigation : MonoBehaviour
 
     void Start()
     {
+        navMeshAgent = GetComponent<NavMeshAgent>();
+
         rb = GetComponent<Rigidbody>();
         currentDestination = currentNode.GetDestination();
     }
@@ -89,10 +97,10 @@ public class WaypointNavigation : MonoBehaviour
 
     private void GetLocationOverride(Node.Locations _location)
     {
-        KeyValuePair<float, Node[]> path1 = new KeyValuePair<float, Node[]>();
-        KeyValuePair<float, Node[]> path2 = new KeyValuePair<float, Node[]>();
+        KeyValuePair<float, Node[]> path1;
+        KeyValuePair<float, Node[]> path2;
         Node[] shortestPath;
-        //Node[] pxxxath2 = null;
+
         if (lastNode == null)
         {
             path1 = Equations.GetQuickestPathToLocation(this.transform, currentNode, _location);
@@ -256,6 +264,11 @@ public class WaypointNavigation : MonoBehaviour
         currentDestination = aggroPath.Peek().GetDestination();
         currentNode = aggroPath.Peek();
         StartCoroutine(GooseTurnBeforeMoving());
+    }
+
+    private void UpdateNavMesh()
+    {
+        navMeshAgent.SetDestination(player.position);
     }
 }
 

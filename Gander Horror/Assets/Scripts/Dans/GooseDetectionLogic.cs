@@ -28,6 +28,9 @@ public class GooseDetectionLogic : MonoBehaviour
         currentDetectionTime += Time.deltaTime / RaycastDetection();
         currentDetectionTime = Mathf.Clamp(currentDetectionTime, 0, minLookDetectionTime);
 
+#if UNITY_EDITOR
+        Debug.Log("Time: " + currentDetectionTime);
+#endif
     }
 
     private float RaycastDetection()
@@ -45,6 +48,10 @@ public class GooseDetectionLogic : MonoBehaviour
             RaycastHit hit;
             Vector3 direction = playerLimbs[i].transform.position - transform.position;
 
+#if UNITY_EDITOR
+            Debug.DrawRay(transform.position, direction, Color.red, .01f);
+#endif
+
             if (Physics.Raycast(transform.position, direction, out hit))
             {
                 if(hit.collider.gameObject.tag == "Player")
@@ -59,6 +66,10 @@ public class GooseDetectionLogic : MonoBehaviour
         float percentage = Mathf.Abs((distance - minMaxDetectionDistance.y) / (minMaxDetectionDistance.x - minMaxDetectionDistance.y)); //calculate percentage based on distance
         percentage *= Mathf.Abs((speed - 0) / (playerLimbs.Length - 0)); //change percentage based on how much of the players body is showing
         float time = (minLookDetectionTime) + (maxTimeBonus - (maxTimeBonus * percentage)); //add any extra time to detect based on ^ pecentage
+
+#if UNITY_EDITOR
+        Debug.Log("Colliders hit: " + speed);
+#endif
 
         return (time / minLookDetectionTime);
     }
