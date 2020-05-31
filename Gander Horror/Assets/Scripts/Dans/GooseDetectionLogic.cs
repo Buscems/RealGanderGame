@@ -13,10 +13,13 @@ public class GooseDetectionLogic : MonoBehaviour
 
     private float currentDetectionTime;
 
+    private WaypointNavigation gooseWaypointNavigation;
+
     // Start is called before the first frame update
     void Start()
     {
         currentDetectionTime = minLookDetectionTime;
+        gooseWaypointNavigation = GetComponent<WaypointNavigation>();
     }
 
     // Update is called once per frame
@@ -28,9 +31,38 @@ public class GooseDetectionLogic : MonoBehaviour
         currentDetectionTime += Time.deltaTime / RaycastDetection();
         currentDetectionTime = Mathf.Clamp(currentDetectionTime, 0, minLookDetectionTime);
 
+        if(currentDetectionTime >= minLookDetectionTime && gooseWaypointNavigation.aggro == false)
+        {
+            gooseWaypointNavigation.InitializeGooseRunTowardPlayer();
+        }
+
 #if UNITY_EDITOR
-        //Debug.Log("Time: " + currentDetectionTime);
+        Debug.Log("Time: " + currentDetectionTime);
 #endif
+    }
+
+    public bool CheckIfPlayerWithinRange()
+    {
+        float distance = Vector3.Distance(playerLimbs[1].transform.position, transform.position);
+        float angle = Equations.GetAngleBetweenTwoPoints(playerLimbs[0].transform.position, transform);
+        if (distance > minMaxDetectionDistance.y || angle > detectionAngle) return false;
+        if (distance < minMaxDetectionDistance.x) return true;
+
+        for (int i = 0; i < playerLimbs.Length; i++)
+        {
+            RaycastHit hit;
+            Vector3 direction = playerLimbs[i].transform.position - transform.position;
+
+            if (Physics.Raycast(transform.position, direction, out hit))
+            {
+                if (hit.collider.gameObject.tag == "Player")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private float RaycastDetection()

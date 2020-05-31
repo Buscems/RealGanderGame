@@ -52,13 +52,17 @@ public class WaypointNavigation : MonoBehaviour
     [Tooltip("The max amount of time the goose waits before moving to a new node")]
     private float maxPotentiaGooseWaitTime;
 
-    private bool aggro = false;
+    [HideInInspector]
+    public bool aggro = false;
     private bool movingTowardsDestination = true;
+    private bool movingTowardPlayer = false;
 
     public bool goToKitchen = false;
     public bool goToBathroom = false;
     public bool goToBedRoom = false;
     public bool goToLivingRoom = false;
+
+    private float navMeshRefreshTimer = 0;
 
     void Start()
     {
@@ -72,7 +76,7 @@ public class WaypointNavigation : MonoBehaviour
     void Update()
     {
         //Rotate towards destination
-        if (movingTowardsDestination)
+        if (movingTowardsDestination || movingTowardPlayer)
         {
             transform.rotation = Equations.RotateTowardsObj(currentDestination, this.transform, ((aggro == true ? aggroTurnSpeed : turnSpeed)));
         }
@@ -99,6 +103,20 @@ public class WaypointNavigation : MonoBehaviour
             GetLocationOverride(Node.Locations.Main_Entrance);
         }
         #endregion
+
+        if (movingTowardPlayer)
+        {
+            navMeshRefreshTimer += Time.deltaTime;
+            if (navMeshRefreshTimer > .05f)
+            {
+                if (GetComponent<GooseDetectionLogic>().CheckIfPlayerWithinRange())
+                {
+                    navMeshRefreshTimer = 0;
+                    currentDestination = player.position;
+                    UpdateNavMesh(player.position, true);
+                }
+            }
+        }
 
     }
 
@@ -145,12 +163,15 @@ public class WaypointNavigation : MonoBehaviour
             Debug.Log("ERROR");
         }
 
-        HurryToPlayer(shortestPath);
+        HurryToPlayerRoom(shortestPath);
     }
 
     private void FixedUpdate()
     {
-        Movement();
+        if (!movingTowardPlayer)
+        {
+            Movement();
+        }
     }
 
     private void Movement()
@@ -177,6 +198,7 @@ public class WaypointNavigation : MonoBehaviour
                     {
                         FindNewNode();
                     }
+                    #region To be removed
                     //Random: Go immediately to next destination or wait a bit
                     /*
                     int randNum = Random.Range(0, 2);
@@ -193,6 +215,7 @@ public class WaypointNavigation : MonoBehaviour
                             break;
                     }
                     */
+                    #endregion
                 }
                 else //if aggro
                 {
@@ -219,6 +242,7 @@ public class WaypointNavigation : MonoBehaviour
                             FindNewNode();
                         }
 
+                        #region To be removed
                         /*
                         //temp
                         int randNum = Random.Range(0, 2);
@@ -235,6 +259,7 @@ public class WaypointNavigation : MonoBehaviour
                                 break;
                         }
                         */
+                        #endregion
                     }
                 }
             }
@@ -313,7 +338,7 @@ public class WaypointNavigation : MonoBehaviour
 
     //When player makes a loud noise forget current destination and RUN to the node nearest the noise made, starts walking when he reaches point
     //-very brief pause tho
-    public void HurryToPlayer(Node[] path)
+    public void HurryToPlayerRoom(Node[] path)
     {
         //play HONK! (very loud)
         aggro = true;
@@ -345,6 +370,14 @@ public class WaypointNavigation : MonoBehaviour
             navMeshAgent.angularSpeed = turnSpeed;
             navMeshAgent.acceleration = walkAcceleration;
         }
+    }
+
+    public void InitializeGooseRunTowardPlayer()
+    {
+        //scary noise
+        movingTowardPlayer = true;
+        SetNewNavVariables(true);
+        navMeshAgent.autoBraking = false;
     }
 }
 
