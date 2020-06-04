@@ -17,6 +17,8 @@ public class PlayerMovement : MonoBehaviour
     public int playerNum;
 
     public float speed;
+    public float sprintSpeed;
+    private float currentSpeed;
     public float gravity;
 
     [SerializeField] [Range(0f, 4f)] float moveSpeed;
@@ -28,6 +30,7 @@ public class PlayerMovement : MonoBehaviour
     bool isGrounded;
 
     public bool useController;
+    [SerializeField]
     bool isCrouch;
 
     Vector3 velocity;
@@ -48,6 +51,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Things to assign")]
     public Transform playerCam;
     public Transform head;
+    public Transform headHolder;
+    public Transform leg;
     public Transform orientation;
     public CapsuleCollider colliderPlayer;
     public Transform leanLeft;
@@ -94,8 +99,6 @@ public class PlayerMovement : MonoBehaviour
 
         cursor.color = Color.white;
 
-        targetY = transform.position.y - 0.5f;
-        mainY = transform.position.y + 0.3f;
         setSpeed = speed;
 
         rb = GetComponent<Rigidbody>();
@@ -114,6 +117,19 @@ public class PlayerMovement : MonoBehaviour
         {
             Cursor.visible = false;
         }
+        
+        if (myPlayer.GetButton("Sprint") && !isCrouch)
+        {
+            currentSpeed = sprintSpeed;
+        }
+        else
+        {
+            currentSpeed = speed;
+        }
+        
+
+        targetY = leg.position.y + .2f;
+        mainY = headHolder.position.y;
 
         Movement();
 
@@ -153,7 +169,7 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedMovement()
     {
-        rb.MovePosition(rb.position + velocity * speed * Time.fixedDeltaTime);
+        rb.MovePosition(rb.position + velocity * currentSpeed * Time.fixedDeltaTime);
         if(velocity == Vector3.zero)
         {
             rb.velocity = Vector3.zero;
@@ -232,8 +248,8 @@ public class PlayerMovement : MonoBehaviour
         if (isCrouch)
         {
 
-            colliderPlayer.height = 1.0f;
-            colliderPlayer.center = new Vector3(0, -.5f, 0);
+            colliderPlayer.height = .5f;
+            colliderPlayer.center = new Vector3(0, -.75f, 0);
 
             head.GetComponent<Collider>().isTrigger = true;
 
